@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  engseg-mobile-backend:
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/engseg
+      DB_USERNAME: engseg
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD obrigatorio}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET obrigatorio}
+      KAFKA_BOOTSTRAP_SERVERS: engseg-redpanda:9092
+      FIREBASE_SERVICE_ACCOUNT_PATH: file:/app/firebase-service-account.json
+    volumes:
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
+    networks:
+      - engseg-network
+
+networks:
+  engseg-network:
+    name: engseg-network
+    external: true
