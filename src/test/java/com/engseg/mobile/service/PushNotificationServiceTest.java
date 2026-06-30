@@ -53,7 +53,7 @@ class PushNotificationServiceTest {
         when(deviceTokenRepository.findByUsuarioIdIn(List.of(usuarioId))).thenReturn(List.of(token));
         when(firebaseMessaging.send(any(Message.class))).thenReturn("ok");
 
-        service.enviarParaUsuario(usuarioId, "Titulo", "Corpo", ncId, "NC_PLANO_REPROVADO");
+        service.enviarParaUsuario(usuarioId, "Titulo", "Corpo", ncId, null, "NC_PLANO_REPROVADO");
 
         ArgumentCaptor<Message> captor = ArgumentCaptor.forClass(Message.class);
         verify(firebaseMessaging).send(captor.capture());
@@ -62,6 +62,25 @@ class PushNotificationServiceTest {
         Map<String, String> data = extractMessageData(message);
         assertThat(data).containsEntry("ncId", ncId.toString());
         assertThat(data).containsEntry("tipo", "NC_PLANO_REPROVADO");
+    }
+
+    @Test
+    void enviarParaUsuario_com_desvioId_inclui_desvioId_no_payload() throws Exception {
+        UUID usuarioId = UUID.randomUUID();
+        UUID desvioId = UUID.randomUUID();
+        DeviceToken token = DeviceToken.builder().id(UUID.randomUUID()).usuarioId(usuarioId).fcmToken("tok-1").build();
+        when(deviceTokenRepository.findByUsuarioIdIn(List.of(usuarioId))).thenReturn(List.of(token));
+        when(firebaseMessaging.send(any(Message.class))).thenReturn("ok");
+
+        service.enviarParaUsuario(usuarioId, "Titulo", "Corpo", null, desvioId, "DESVIO_ATIVADO");
+
+        ArgumentCaptor<Message> captor = ArgumentCaptor.forClass(Message.class);
+        verify(firebaseMessaging).send(captor.capture());
+
+        Map<String, String> data = extractMessageData(captor.getValue());
+        assertThat(data).containsEntry("desvioId", desvioId.toString());
+        assertThat(data).containsEntry("tipo", "DESVIO_ATIVADO");
+        assertThat(data).doesNotContainKey("ncId");
     }
 
     @SuppressWarnings("unchecked")

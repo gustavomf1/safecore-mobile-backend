@@ -40,6 +40,7 @@ public class MobileKafkaConsumer {
                     .eventId(event.eventId())
                     .usuarioId(usuarioId)
                     .ncId(event.ncId())
+                    .desvioId(null)
                     .tipo(event.tipo())
                     .titulo(event.titulo())
                     .corpo(event.corpo())
@@ -47,7 +48,7 @@ public class MobileKafkaConsumer {
                     .criadoEm(LocalDateTime.now())
                     .build();
             notificacaoHistoricoRepository.save(historico);
-            pushService.enviarParaUsuario(usuarioId, event.titulo(), event.corpo(), event.ncId(), event.tipo());
+            pushService.enviarParaUsuario(usuarioId, event.titulo(), event.corpo(), event.ncId(), null, event.tipo());
         }
     }
 
@@ -67,6 +68,7 @@ public class MobileKafkaConsumer {
                     .id(UUID.randomUUID())
                     .eventId(event.eventId())
                     .usuarioId(usuarioId)
+                    .ncId(null)
                     .desvioId(event.desvioId())
                     .tipo(event.tipo())
                     .titulo(event.titulo())
@@ -75,7 +77,7 @@ public class MobileKafkaConsumer {
                     .criadoEm(LocalDateTime.now())
                     .build();
             notificacaoHistoricoRepository.save(historico);
-            pushService.enviar(List.of(usuarioId), event.titulo(), event.corpo());
+            pushService.enviarParaUsuario(usuarioId, event.titulo(), event.corpo(), null, event.desvioId(), event.tipo());
         }
     }
 

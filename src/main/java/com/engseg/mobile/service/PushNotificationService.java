@@ -27,18 +27,20 @@ public class PushNotificationService {
 
         List<DeviceToken> tokens = deviceTokenRepository.findByUsuarioIdIn(usuarioIds);
         for (DeviceToken token : tokens) {
-            enviarParaToken(token.getFcmToken(), titulo, corpo, null, null);
+            enviarParaToken(token.getFcmToken(), titulo, corpo, null, null, null);
         }
     }
 
-    public void enviarParaUsuario(UUID usuarioId, String titulo, String corpo, UUID ncId, String tipo) {
+    public void enviarParaUsuario(UUID usuarioId, String titulo, String corpo,
+                                   UUID ncId, UUID desvioId, String tipo) {
         List<DeviceToken> tokens = deviceTokenRepository.findByUsuarioIdIn(List.of(usuarioId));
         for (DeviceToken token : tokens) {
-            enviarParaToken(token.getFcmToken(), titulo, corpo, ncId, tipo);
+            enviarParaToken(token.getFcmToken(), titulo, corpo, ncId, desvioId, tipo);
         }
     }
 
-    private void enviarParaToken(String fcmToken, String titulo, String corpo, UUID ncId, String tipo) {
+    private void enviarParaToken(String fcmToken, String titulo, String corpo,
+                                  UUID ncId, UUID desvioId, String tipo) {
         Message.Builder messageBuilder = Message.builder()
                 .setToken(fcmToken)
                 .setNotification(Notification.builder()
@@ -46,6 +48,7 @@ public class PushNotificationService {
                         .setBody(corpo)
                         .build());
         if (ncId != null) messageBuilder.putData("ncId", ncId.toString());
+        if (desvioId != null) messageBuilder.putData("desvioId", desvioId.toString());
         if (tipo != null) messageBuilder.putData("tipo", tipo);
 
         try {
