@@ -24,8 +24,11 @@ public class NotificacaoHistorico {
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
 
-    @Column(name = "nc_id", nullable = false)
+    @Column(name = "nc_id")
     private UUID ncId;
+
+    @Column(name = "desvio_id")
+    private UUID desvioId;
 
     @Column(nullable = false, length = 50)
     private String tipo;

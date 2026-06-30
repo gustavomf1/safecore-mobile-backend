@@ -12,7 +12,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,17 +54,29 @@ public class MobileKafkaConsumer {
     @KafkaListener(topics = "engseg.desvio.events", groupId = "engseg-mobile-backend",
                    containerFactory = "desvioKafkaListenerContainerFactory")
     public void consumirDesvioEvent(DesvioKafkaEvent event) {
-        log.info("MobileKafkaConsumer: Desvio event tipo={} desvioId={}", event.tipo(), event.desvioId());
-        List<UUID> destinatarios = resolverDestinatariosDesvio(event);
+        if (notificacaoHistoricoRepository.existsByEventId(event.eventId())) {
+            log.debug("MobileKafkaConsumer: evento desvio {} já processado, ignorado", event.eventId());
+            return;
+        }
+
+        List<UUID> destinatarios = event.destinatarios() != null ? event.destinatarios() : List.of();
         if (destinatarios.isEmpty()) return;
 
-        String titulo = "EngSeg — " + event.titulo();
-        String corpo = switch (event.tipo()) {
-            case "DESVIO_CRIADO" -> "Novo Desvio aberto: " + event.titulo();
-            case "DESVIO_STATUS_ALTERADO" -> "Desvio atualizado para " + event.status() + ": " + event.titulo();
-            default -> event.titulo();
-        };
-        pushService.enviar(destinatarios, titulo, corpo);
+        for (UUID usuarioId : destinatarios) {
+            NotificacaoHistorico historico = NotificacaoHistorico.builder()
+                    .id(UUID.randomUUID())
+                    .eventId(event.eventId())
+                    .usuarioId(usuarioId)
+                    .desvioId(event.desvioId())
+                    .tipo(event.tipo())
+                    .titulo(event.titulo())
+                    .corpo(event.corpo())
+                    .lida(false)
+                    .criadoEm(LocalDateTime.now())
+                    .build();
+            notificacaoHistoricoRepository.save(historico);
+            pushService.enviar(List.of(usuarioId), event.titulo(), event.corpo());
+        }
     }
 
     @KafkaListener(topics = "engseg.expiry.alerts", groupId = "engseg-mobile-backend",
@@ -78,18 +89,4 @@ public class MobileKafkaConsumer {
                 event.titulo() + " vence em " + event.diasRestantes() + " dias.");
     }
 
-    private List<UUID> resolverDestinatariosDesvio(DesvioKafkaEvent event) {
-        List<UUID> dest = new ArrayList<>();
-        if ("DESVIO_CRIADO".equals(event.tipo())) {
-            if (event.responsavelId() != null) dest.add(event.responsavelId());
-            if (event.responsavelTrativaId() != null
-                    && !event.responsavelTrativaId().equals(event.responsavelId()))
-                dest.add(event.responsavelTrativaId());
-        } else {
-            if (event.criadorId() != null) dest.add(event.criadorId());
-            if (event.responsavelId() != null && !event.responsavelId().equals(event.criadorId()))
-                dest.add(event.responsavelId());
-        }
-        return dest;
-    }
 }

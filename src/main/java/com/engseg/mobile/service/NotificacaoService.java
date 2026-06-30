@@ -42,7 +42,8 @@ public class NotificacaoService {
     }
 
     private NotificacaoResponse toResponse(NotificacaoHistorico n) {
-        return new NotificacaoResponse(n.getId(), n.getNcId(), n.getTipo(), n.getTitulo(), n.getCorpo(),
+        return new NotificacaoResponse(n.getId(), n.getNcId(), n.getDesvioId(),
+                n.getTipo(), n.getTitulo(), n.getCorpo(),
                 n.isLida(), n.getCriadoEm());
     }
 }
