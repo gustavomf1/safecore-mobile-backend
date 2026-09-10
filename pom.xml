@@ -11,8 +11,8 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.engseg</groupId>
-    <artifactId>engseg-mobile-backend</artifactId>
+    <groupId>com.safecore</groupId>
+    <artifactId>safecore-mobile-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
