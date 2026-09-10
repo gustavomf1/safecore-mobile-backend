@@ -30,8 +30,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/gustavomf1/engseg-mobile-backend:latest
-            ghcr.io/gustavomf1/engseg-mobile-backend:${{ github.sha }}
+            ghcr.io/gustavomf1/safecore-mobile-backend:latest
+            ghcr.io/gustavomf1/safecore-mobile-backend:${{ github.sha }}
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
