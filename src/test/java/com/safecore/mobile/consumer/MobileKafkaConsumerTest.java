@@ -34,6 +34,8 @@ class MobileKafkaConsumerTest {
     @Mock NotificacaoHistoricoRepository notificacaoHistoricoRepository;
     @InjectMocks MobileKafkaConsumer consumer;
 
+    private final ArgumentCaptor<String> tituloCaptor = ArgumentCaptor.forClass(String.class);
+
     @Test
     void consumirNcEvent_salvaHistoricoEEnviaPushParaCadaDestinatario() {
         UUID eventId = UUID.randomUUID();
@@ -89,11 +91,14 @@ class MobileKafkaConsumerTest {
     void expiryAlertDeveNotificarResponsavelTratativa() {
         UUID responsavelId = UUID.randomUUID();
         ExpiryAlertEvent event = new ExpiryAlertEvent(
-                UUID.randomUUID(), "NC Vencendo", 10, responsavelId);
+                UUID.randomUUID(), "NC Vencendo", "NC-0004", 10, responsavelId);
 
         consumer.consumirExpiryAlert(event);
 
-        verify(pushService).enviar(eq(List.of(responsavelId)), any(), any());
+        verify(pushService).enviar(eq(List.of(responsavelId)), tituloCaptor.capture(), any());
+        assertThat(tituloCaptor.getValue())
+                .isEqualTo("NC-0004 - NC Vencendo")
+                .doesNotContain("EngSeg");
     }
 
     @Test
