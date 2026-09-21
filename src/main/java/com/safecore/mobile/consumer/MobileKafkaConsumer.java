@@ -86,8 +86,9 @@ public class MobileKafkaConsumer {
     public void consumirExpiryAlert(ExpiryAlertEvent event) {
         log.info("MobileKafkaConsumer: expiry alert ncId={} diasRestantes={}", event.ncId(), event.diasRestantes());
         if (event.responsavelId() == null) return;
+        String titulo = event.codigo() == null ? event.titulo() : event.codigo() + " - " + event.titulo();
         pushService.enviar(List.of(event.responsavelId()),
-                "EngSeg — NC vencendo em " + event.diasRestantes() + " dias",
+                titulo,
                 event.titulo() + " vence em " + event.diasRestantes() + " dias.");
     }
 
